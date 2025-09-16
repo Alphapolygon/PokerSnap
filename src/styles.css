@@ -158,7 +158,7 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
 .lane{
   width: var(--lane-w) !important;
   height: var(--lane-h) !important;
-  display: flex; flex-direction: column;
+/*display: flex; flex-direction: column;*/
 }
 .laneHead{ height: var(--lane-head-h); display:flex; align-items:center; justify-content:space-between; }
 .laneBody{ flex:1; min-height:0; overflow:auto; }
