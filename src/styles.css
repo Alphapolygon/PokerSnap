@@ -131,22 +131,21 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
     transform: none; width: 70px; height: 100px;
   }
 }
-/* === Unified, centered board =================================================
-   One source of truth for widths/heights so all rows match exactly.          */
+/* === Unified, centered board + adjustable lane height ===================== */
 :root{
   --cols: 3;                 /* number of lanes */
-  --lane-w: 340px;           /* FIXED lane width (tweak this) */
+  --lane-w: 340px;           /* FIXED lane width (adjust to taste) */
   --lane-gap: 16px;          /* space between lanes */
-  --lane-h: 420px;           /* << adjustable lane HEIGHT */
-  --lane-head-h: 56px;       /* header area inside each lane */
+  --lane-h: 380px;           /* <<< ADJUST LANE HEIGHT HERE */
+  --lane-head-h: 56px;       /* header inside each lane */
 
   --board-w: calc(var(--cols)*var(--lane-w) + (var(--cols)-1)*var(--lane-gap));
 }
 
-/* Center any “board” row to the same width */
-.board{ width: var(--board-w); margin: 0 auto; }
+/* Center any board row (opponent strips, lanes, player strips, hand tray) */
+.board { width: var(--board-w); margin: 0 auto; }
 
-/* Lanes row: fixed columns, centered */
+/* Lanes row (fixed columns, centered) */
 .lanes.board{
   display: grid !important;
   grid-template-columns: repeat(var(--cols), var(--lane-w));
@@ -154,16 +153,16 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
   justify-content: center;
 }
 
-/* Each lane tile gets the same fixed W/H */
+/* Lane tile gets fixed width/height */
 .lane{
   width: var(--lane-w) !important;
   height: var(--lane-h) !important;
-/*display: flex; flex-direction: column;*/
+  display: flex; flex-direction: column;
 }
 .laneHead{ height: var(--lane-head-h); display:flex; align-items:center; justify-content:space-between; }
 .laneBody{ flex:1; min-height:0; overflow:auto; }
 
-/* Opponent + player “cards in lane” strips use the SAME width as lanes */
+/* Opponent & player strips use the SAME width as lanes */
 .lane-summaries.board{
   display: grid !important;
   grid-template-columns: repeat(var(--cols), var(--lane-w));
@@ -173,15 +172,21 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
 .lane-summary,
 .lane-summary.playedstrip{ width: var(--lane-w); }
 
-/* Hand centered and aligned to board width */
+/* Hand centered to same board width */
 .hand-tray{ width: var(--board-w); margin: 0 auto; }
 .hand{ justify-content: center; gap: 10px; }
 
-/* Optional: make lanes a bit shorter on tablets; stack on phones */
+/* --- Responsive tweaks ---------------------------------------------------- */
 @media (max-width: 1024px){
-  :root{ --lane-w: 300px; --lane-h: 380px; }
+  :root{ --lane-w: 300px; --lane-h: 340px; }
 }
 @media (max-width: 768px){
-  :root{ --cols: 1; --lane-w: 92vw; --lane-gap: 12px; --lane-h: auto; }
+  :root{
+    --cols: 1;
+    --lane-w: 92vw;
+    --lane-gap: 12px;
+    --lane-h: auto;        /* grow naturally on phones */
+  }
   .deck{ right: 8px; top: calc(64px + 8px); transform: none; width: 70px; height: 100px; }
 }
+
