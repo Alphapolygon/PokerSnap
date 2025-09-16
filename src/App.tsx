@@ -445,7 +445,7 @@ function nextTurn(){
       </main>
 
 
-<section className="lane-summaries board">
+<section className="lane-summaries board" style={{padding:'0 12px 8px'}}>
 
       
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12}}>
