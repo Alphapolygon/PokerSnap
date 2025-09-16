@@ -295,9 +295,38 @@ try {
     draw(1)
   }
 
+  function opponentTurn() {
+  // play 1–2 cards from the shared shoe into random lanes
+  const plays = Math.min(2, Math.max(0, Math.min(2, shoe.length)));
+  const targets: number[] = [];
+  for (let k = 0; k < plays; k++) targets.push(Math.floor(Math.random() * 3));
+
+  // pop from shoe and append into opponent lanes
+  setShoe(prev => {
+    let next = [...prev];
+    const taken: CardDef[] = [];
+    for (let k = 0; k < plays; k++) {
+      const c = next.pop();
+      if (c) taken.push(c);
+    }
+    setOpponentLanes(ol => {
+      const out: Record<number, CardDef[]> = {0:[...(ol[0]||[])],1:[...(ol[1]||[])],2:[...(ol[2]||[])]};
+      taken.forEach((c, idx) => {
+        const lane = targets[idx] ?? 0;
+        out[lane] = [...out[lane], c];
+      });
+      return out;
+    });
+    return next;
+  });
+}
+
   
 function nextTurn(){
   if (turn>=6) return
+ // Opponent plays now, then we reveal their lane summaries
+  opponentTurn();
+  
   setOppRevealed(true)
   setTimeout(()=> {
     setOppRevealed(false)
