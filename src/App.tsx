@@ -14,9 +14,7 @@ const SUITS = ['heart','spade','club','diamond'] as const
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'] as const
 
 
-// Opponent state (add near your other useState calls)
-const [opponentLanes, setOpponentLanes] = useState<Record<number, CardDef[]>>({0:[],1:[],2:[]})
-const [oppRevealed, setOppRevealed] = useState(false)
+
 
 
 function createCommunityDeck(): CommunityCard[] {
@@ -69,6 +67,8 @@ export default function App() {
 // Opponent (demo): mirror lanes structure but separate state
 const [opponentLanes, setOpponentLanes] = useState<Record<number, CardDef[]>>({0:[],1:[],2:[]})
 const [oppRevealed, setOppRevealed] = useState(false)
+
+
 
 // Deck & FX overlay
 const deckRef = useRef<HTMLDivElement|null>(null)
