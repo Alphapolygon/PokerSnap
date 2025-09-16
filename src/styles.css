@@ -68,7 +68,8 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
   font-size: 11px; color:#9ca3af;
 }
 .laneBody { display:flex; flex-direction:column; gap:6px; }
-\n
+
+
 /* Drag ghost and origin styling */
 .drag-ghost { filter: drop-shadow(0 12px 24px rgba(0,0,0,.25)); transform: rotate(3deg) scale(1.06); transition: transform .05s; }
 .drag-ghost .card { box-shadow: 0 10px 30px rgba(0,0,0,.25); }
@@ -86,41 +87,93 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
 .card:active { cursor: grabbing; }
 .dragging * { cursor: grabbing !important; }
 .drag-ghost { filter: drop-shadow(0 12px 24px rgba(0,0,0,.25)); }
+.app main, .app section { margin: 0; }
+.board.lanes { padding-bottom: 0; }
+.lane-summaries.board { margin-top: 6px; }
 
-/* === Stage layout to center lanes and add opponent hand =================== */
-:root{ --header-h: 88px; } /* adjust to your actual header height */
 
+/* === Shared centered board & fixed columns ================================ */
+:root{
+  --cols: 3;                 /* number of lanes shown */
+  --lane-w: 360px;           /* fixed width of each lane/panel */
+  --lane-gap: 20px;          /* space between lanes/panels */
+  --board-w: calc(var(--cols)*var(--lane-w) + (var(--cols)-1)*var(--lane-gap));
+
+  --lane-h: 520px;           /* fixed lane height */
+  --lane-head-h: 56px;       /* header inside each lane */
+}
+
+/* Centers any row to the same board width */
+.board { width: var(--board-w); margin: 0 auto; }
+
+/* Lanes row (fixed-size columns, centered by .board) */
+.board.lanes {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--lane-w));
+  column-gap: var(--lane-gap);
+  padding: 0 12px 0; /* keep tight above summaries */
+}
+
+/* Each lane: fixed width/height and flex column */
+.lane {
+  width: var(--lane-w);
+  height: var(--lane-h);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header gets fixed height; content grows and can scroll if needed */
+.lane .laneHead {
+  height: var(--lane-head-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lane .laneBody {
+  flex: 1;
+  min-height: 0;             /* allows child to shrink within flex column */
+  overflow: auto;            /* scroll if cards exceed space */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* “Your cards in lane” row (same sizing as lanes) */
+.lane-summaries {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--lane-w));
+  column-gap: var(--lane-gap);
+  row-gap: 0;
+}
+.lane-summary {
+  width: var(--lane-w);
+  height: var(--lane-h);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hand tray uses the same board width; cards centered inside */
+.hand-tray { width: var(--board-w); margin: 0 auto; }
+.hand { display: flex; justify-content: center; gap: 12px; }
+
+/* Stage layout - opponent | lanes (center) | summaries | hand */
+:root{ --header-h: 88px; } /* adjust to your header height */
 .stage{
   min-height: calc(100vh - var(--header-h));
   display: grid;
-  grid-template-rows: auto 1fr auto auto; /* opp-hand | lanes | summaries | hand */
+  grid-template-rows: auto 1fr auto auto;
   gap: 8px;
 }
-
-/* Center the lanes row vertically within the stage middle track */
-.board.lanes{
-  align-self: center;
-  padding-bottom: 0; /* tighter gap above summaries */
-}
-
-/* Summaries sit just above the hand */
-.lane-summaries.board{ margin-top: 0; }
+.board.lanes{ align-self: center; }
 
 /* Opponent hand tray (top) shares board width */
 .opp-hand-tray{ width: var(--board-w); margin: 0 auto; }
-.opp-hand{
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  opacity: .85;
-  filter: saturate(.85);
-}
-
-/* Simple card back for opponent's hidden cards */
+.opp-hand{ display: flex; justify-content: center; gap: 12px; opacity: .85; filter: saturate(.85); }
 .card-back{
   position: relative;
-  width: 112px;
-  height: 160px;
+  width: 112px; height: 160px;
   border-radius: 12px;
   background: linear-gradient(145deg, #1c2238, #0f1322);
   border: 1px solid #2b3452;
@@ -132,4 +185,16 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
   inset: 8px;
   border-radius: 8px;
   border: 1px dashed #44507a;
+}
+
+/* Tighter vertical spacing between lanes and summaries */
+.app main, .app section { margin: 0; }
+.lane-summaries.board { margin-top: 6px; }
+
+/* Optional responsive wrap: 2 cols, then 1 col */
+@media (max-width: 1180px){
+  :root{ --cols: 2; }
+}
+@media (max-width: 780px){
+  :root{ --cols: 1; }
 }

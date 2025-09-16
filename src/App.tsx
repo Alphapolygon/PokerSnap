@@ -279,7 +279,7 @@ export default function App() {
         </div>
       </header>
 
-      <div className="stage">
+<div className="stage">
   <div className="opp-hand-tray">
     <div className="opp-hand">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -288,7 +288,8 @@ export default function App() {
     </div>
   </div>
 
-<main className="lanes board">
+
+      <main className="lanes board">
         {[0,1,2].map(i => {
           const sc = laneScore(i)
           return (
@@ -312,26 +313,24 @@ export default function App() {
         })}
       </main>
 
-      <section style={{padding:'0 12px 8px'}}>
-        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12}}>
-          {[0,1,2].map(i=> (
-            <div key={i} style={{background:'rgba(255,255,255,.7)', border:'1px solid #e6e2d9', borderRadius:12, padding:8}}>
-              <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6}}>
-                <span>🖐️</span> Your cards in Lane {i+1}
-              </div>
-              <div style={{display:'flex', gap:6, marginTop:4}}>
-                {(lanes[i]||[]).map((c, idx) => (
-                  <div className="mini" key={c.id + '@' + idx}>
-                    <div className="rk">{c.rank}</div>
-                    <div className="si">{suitChar(c.suit)}</div>
-                  </div>
-                ))}
-                {(lanes[i]||[]).length===0 && <div style={{fontSize:11, color:'#9ca3af'}}>No cards played yet.</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <section className="lane-summaries board" style={{ padding: '0 12px 0' }}>
+  {[0,1,2].map(i=> (
+    <div key={i} className="lane-summary" style={{background:'rgba(255,255,255,.7)', border:'1px solid #e6e2d9', borderRadius:12, padding:8}}>
+      <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6}}>
+        <span>🖐️</span> Your cards in Lane {i+1}
+      </div>
+      <div style={{display:'flex', gap:6, marginTop:4, justifyContent:'center'}}>
+        {(lanes[i]||[]).map((c, idx) => (
+          <div className="mini" key={c.id + '@' + idx}>
+            <div className="rk">{c.rank}</div>
+            <div className="si">{suitChar(c.suit)}</div>
+          </div>
+        ))}
+        {(lanes[i]||[]).length===0 && <div style={{fontSize:11, color:'#9ca3af'}}>No cards played yet.</div>}
+      </div>
+    </div>
+  ))}
+</section>
 
       <footer>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
@@ -342,7 +341,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="hand">
+        <div className="hand-tray"><div className="hand">
           {hand.map((c, idx) => (
             <div key={c.id + '@' + idx} style={{position:'relative'}}>
               <div style={drag.active && drag.card === c
@@ -354,9 +353,8 @@ export default function App() {
             </div>
           ))}
           {hand.length===0 && <div style={{color:'#6b7280'}}>Drawing…</div>}
-        </div>
+        </div></div>
       </footer>
-</div>
 
       {/* Drag ghost to <body> so it always matches clientX/Y */}
       {drag.active && drag.card && <DragGhost drag={drag} card={drag.card} />}
