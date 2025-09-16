@@ -446,8 +446,8 @@ function nextTurn(){
 
 
 
-
-      <section style={{padding:'0 12px 8px'}}>
+<section className="lane-summaries board">
+      
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12}}>
           {[0,1,2].map(i=> (
             <div key={i} style={{background:'rgba(255,255,255,.7)', border:'1px solid #e6e2d9', borderRadius:12, padding:8}}>
