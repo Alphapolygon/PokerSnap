@@ -113,14 +113,14 @@ function spawnFlight(card: CardDef, from:{x:number,y:number}, to:{x:number,y:num
   }, [drag.active])
 
   
-// ---- DOM rect helpers ----
+//  DOM rect helpers ----
   function getViewportCenterOf(el: HTMLElement|null){
     if (!el) return { x: innerWidth - 40, y: innerHeight/2 }
     const r = el.getBoundingClientRect()
     return { x: r.left + r.width/2, y: r.top + r.height/2 }
   }
 
-// ---- Draw helpers
+//  Draw helpers
  ----
   function drawFromPiles(want: number, handStart: CardDef[]) {
     let h = [...handStart]
