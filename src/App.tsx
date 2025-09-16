@@ -340,7 +340,6 @@ function nextTurn(){
   
   setOppRevealed(true)
   setTimeout(()=> {
-    setOppRevealed(false)
     startTurn(turn+1)
   }, 800)
 }
