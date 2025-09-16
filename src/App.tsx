@@ -382,31 +382,7 @@ function nextTurn(){
         </div>
       </header>
 
-      <main className="lanes">
-        {[0,1,2].map(i => {
-          const sc = laneScore(i)
-          return (
-            <Lane key={i}
-              idx={i}
-              rule={['Flushes x2','Winner +10','Straight x2'][i]}
-              board={{
-                flop: revealStage>=1? community[i].flop : [null,null,null],
-                turn: revealStage>=2? community[i].turn : null,
-                river: revealStage>=3? community[i].river : null,
-              }}
-              isDragOver={drag.over===i}
-              shake={shakeLane===i}
-              onEnter={()=>laneEnter(i)}
-              onLeave={()=>laneLeave(i)}
-              onDrop={()=>laneDrop(i)}
-              bestLabel={sc.label}
-              scoreTotal={sc.total}
-            />
-          )
-        })}
-      </main>
-
-      <section className="lane-summaries board">
+            <section className="lane-summaries board">
   {[0,1,2].map(i=> (
     <div key={'opp'+i} className="lane-summary"
          style={{background:'rgba(0,0,0,.08)', border:'1px solid #d8d5ce', borderRadius:12, padding:8}}>
@@ -441,6 +417,32 @@ function nextTurn(){
     </div>
   ))}
 </section>
+
+      <main className="lanes">
+        {[0,1,2].map(i => {
+          const sc = laneScore(i)
+          return (
+            <Lane key={i}
+              idx={i}
+              rule={['Flushes x2','Winner +10','Straight x2'][i]}
+              board={{
+                flop: revealStage>=1? community[i].flop : [null,null,null],
+                turn: revealStage>=2? community[i].turn : null,
+                river: revealStage>=3? community[i].river : null,
+              }}
+              isDragOver={drag.over===i}
+              shake={shakeLane===i}
+              onEnter={()=>laneEnter(i)}
+              onLeave={()=>laneLeave(i)}
+              onDrop={()=>laneDrop(i)}
+              bestLabel={sc.label}
+              scoreTotal={sc.total}
+            />
+          )
+        })}
+      </main>
+
+
 
 
       <section style={{padding:'0 12px 8px'}}>
