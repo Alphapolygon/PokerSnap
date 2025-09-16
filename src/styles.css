@@ -133,3 +133,67 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
   border-radius: 8px;
   border: 1px dashed #44507a;
 }
+/* ================== Responsive layout ================== */
+/* Desktop defaults are whatever you already have. */
+
+/* Tablet: slightly narrower lanes */
+@media (max-width: 1024px) {
+  :root{
+    --lane-w: 300px;     /* was 360px */
+    --lane-h: 460px;     /* optional: shorter lanes */
+  }
+}
+
+/* Mobile: single column, full-viewport width */
+@media (max-width: 768px) {
+  :root{
+    --cols: 1;                /* stack lanes vertically */
+    --lane-w: 92vw;           /* lane width fits the phone */
+    --lane-h: auto;           /* let lane height grow with content */
+    --lane-gap: 12px;
+  }
+
+  /* board rows (lanes + summaries + hand tray) all match the phone width */
+  .board{
+    width: 92vw;              /* override the computed board width */
+    margin: 0 auto;
+  }
+
+  /* one column grids */
+  .board.lanes,
+  .lane-summaries{
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: var(--lane-gap);
+    justify-items: center;
+  }
+
+  /* make each lane/panel conform to the mobile width */
+  .lane,
+  .lane-summary{
+    width: var(--lane-w);
+    height: auto;             /* or set a fixed px value if you prefer */
+    box-sizing: border-box;
+  }
+
+  /* tighten internal spacing if needed */
+  .lane .laneBody{
+    overflow: visible;        /* avoid inner scroll on small screens */
+    gap: 8px;
+  }
+
+  /* hand tray: wrap cards to multiple rows */
+  .hand{
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  /* optional: slightly smaller card size on phones
+     (only if your cards overflow horizontally) */
+  .card{
+    width: 96px;
+    height: 140px;
+    flex: 0 0 96px;
+  }
+}
