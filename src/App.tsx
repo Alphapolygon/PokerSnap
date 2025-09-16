@@ -13,10 +13,6 @@ type LaneBoard = { flop: (CommunityCard|null)[], turn: CommunityCard|null, river
 const SUITS = ['heart','spade','club','diamond'] as const
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'] as const
 
-
-
-
-
 function createCommunityDeck(): CommunityCard[] {
   const deck: CommunityCard[] = []
   for (const s of SUITS) for (const r of RANKS) deck.push({ id: r + s[0], rank: r as any, suit: s as any })
@@ -63,16 +59,6 @@ function DragGhost({ drag, card }: { drag: DragState, card: CardDef }) {
 }
 
 export default function App() {
-
-// Opponent (demo): mirror lanes structure but separate state
-const [opponentLanes, setOpponentLanes] = useState<Record<number, CardDef[]>>({0:[],1:[],2:[]})
-const [oppRevealed, setOppRevealed] = useState(false)
-
-
-
-// Deck & FX overlay
-const deckRef = useRef<HTMLDivElement|null>(null)
-const [flights, setFlights] = useState<Array<{id:string, card: CardDef, x:number, y:number, dx:number, dy:number}>>([])
   // Community
   const [community] = useState(()=>predealBoards(createCommunityDeck()))
   const [revealStage, setRevealStage] = useState(0) // 0:none,1:flop,2:turn,3:river
@@ -100,16 +86,6 @@ const [flights, setFlights] = useState<Array<{id:string, card: CardDef, x:number
   const [shakeLane, setShakeLane] = useState<number|null>(null)
   const [energyNextTurn, setEnergyNextTurn] = useState(0)
 
-// Spawn a simple flight animation from (x,y) to (tx,ty) in viewport coords
-function spawnFlight(card: CardDef, from:{x:number,y:number}, to:{x:number,y:number}){
-  const id = card.id + '-' + Math.random().toString(36).slice(2)
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  setFlights(f => [...f, { id, card, x: from.x, y: from.y, dx, dy }])
-  // Remove after animation ends (~360ms)
-  setTimeout(()=> setFlights(f=> f.filter(fl=> fl.id!==id)), 420)
-}
-
   useEffect(()=> { startTurn(1) }, [])
 
   // Optional body class while dragging (cursor UX)
@@ -118,16 +94,7 @@ function spawnFlight(card: CardDef, from:{x:number,y:number}, to:{x:number,y:num
     drag.active ? c.add('dragging') : c.remove('dragging')
   }, [drag.active])
 
-  
-//  DOM rect helpers 
-  function getViewportCenterOf(el: HTMLElement|null){
-    if (!el) return { x: innerWidth - 40, y: innerHeight/2 }
-    const r = el.getBoundingClientRect()
-    return { x: r.left + r.width/2, y: r.top + r.height/2 }
-  }
-
-//  Draw helpers
- 
+  // ---- Draw helpers ----
   function drawFromPiles(want: number, handStart: CardDef[]) {
     let h = [...handStart]
     let shoeLocal = [...shoe]
@@ -146,21 +113,7 @@ function spawnFlight(card: CardDef, from:{x:number,y:number}, to:{x:number,y:num
     return h
   }
   function drawTo(n: number) { setHand(prev => drawFromPiles(Math.max(0, n - prev.length), prev)) }
-  
-function draw(n: number){
-  // visual: spawn n flights from deck to hand tray center
-  const from = getViewportCenterOf(deckRef.current)
-  const handTray = document.querySelector('.hand-tray') as HTMLElement | null
-  const to = getViewportCenterOf(handTray)
-  for (let i=0;i<n;i++){
-    setTimeout(()=> {
-      const c = (shoe[shoe.length-1-i]) || hand[0] || CARD_DEFS[0]
-      spawnFlight(c, from, to)
-    }, i*70)
-  }
-  setHand(prev => drawFromPiles(n, prev))
-}
-
+  function draw(n: number)   { setHand(prev => drawFromPiles(n, prev)) }
 
   function doDiscard(n:number) {
     setHand(prev => {
@@ -199,14 +152,6 @@ function draw(n: number){
     setHand(prev => prev.filter(c => c !== card))
     setEnergy(e => Math.max(0, e - card.cost))
     setSelected(null)
-
-// FX: fly from current cursor (drag.x,drag.y) to lane center
-try {
-  const from = { x: drag.x, y: drag.y }
-  const laneEl = document.querySelector(`[data-lane="${laneIdx}"]`) as HTMLElement | null
-  const to = getViewportCenterOf(laneEl)
-  spawnFlight(card, from, to)
-} catch {}
 
     // Centralized effect engine
     applyOnReveal(card, {
@@ -290,60 +235,13 @@ try {
     setHand(prev => prev.filter(c => c !== selected))
     setDiscard(d => [...d, selected!])
     setSelected(null)
-
-// FX: fly from current cursor (drag.x,drag.y) to lane center
-try {
-  const from = { x: drag.x, y: drag.y }
-  const laneEl = document.querySelector(`[data-lane="${laneIdx}"]`) as HTMLElement | null
-  const to = getViewportCenterOf(laneEl)
-  spawnFlight(card, from, to)
-} catch {}
     draw(1)
   }
 
-function opponentTurn() {
-  // play 1–2 cards from shoe into random lanes
-  const plays = Math.min(2, Math.max(0, Math.min(2, shoe.length)));
-  const targets: number[] = [];
-  for (let k = 0; k < plays; k++) targets.push(Math.floor(Math.random() * 3));
-
-  // take from shoe, append to opponent lanes
-  setShoe(prev => {
-    const next = [...prev];
-    const taken: CardDef[] = [];
-    for (let k = 0; k < plays; k++) {
-      const c = next.pop();
-      if (c) taken.push(c);
-    }
-    setOpponentLanes(ol => {
-      const out: Record<number, CardDef[]> = {
-        0: [...(ol[0]||[])],
-        1: [...(ol[1]||[])],
-        2: [...(ol[2]||[])],
-      };
-      taken.forEach((c, idx) => {
-        const lane = targets[idx] ?? 0;
-        out[lane] = [...out[lane], c];
-      });
-      return out;
-    });
-    return next;
-  });
-}
-
-
-  
-function nextTurn(){
-  if (turn>=6) return
- // Opponent plays now, then we reveal their lane summaries
-  opponentTurn();
-  
-  setOppRevealed(true)
-  setTimeout(()=> {
+  function nextTurn() {
+    if (turn>=6) return
     startTurn(turn+1)
-  }, 800)
-}
-
+  }
 
   function revealedBoard(i:number) {
     const arr: CommunityCard[] = []
@@ -381,46 +279,17 @@ function nextTurn(){
         </div>
       </header>
 
-<section className="lane-summaries board">
-  {[0,1,2].map(i=> (
-    <div key={'opp'+i} className="lane-summary playedstrip opp">
-      <div className="lane-summary-head">
-        <span>👤 Opponent cards in Lane {i+1}</span>
-      </div>
-
-      <div className="lane-summary-cards">
-        {!oppRevealed ? (
-          <>
-            {Array.from({length:(opponentLanes[i]||[]).length || 0}).map((_,k)=>(
-              <div key={k} className="mini back" />
-            ))}
-            {(opponentLanes[i]||[]).length===0 && (
-              <div className="hint">Hidden</div>
-            )}
-          </>
-        ) : (
-          <>
-            {(opponentLanes[i]||[]).map((c, idx) => (
-              <div className="mini" key={c.id + '@o' + idx}>
-                <div className="rk">{c.rank}</div>
-                <div className="si">{suitChar(c.suit)}</div>
-              </div>
-            ))}
-            {(opponentLanes[i]||[]).length===0 && (
-              <div className="hint">No cards played yet.</div>
-            )}
-          </>
-        )}
-      </div>
+<div className="stage">
+  <div className="opp-hand-tray">
+    <div className="opp-hand">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="card-back" />
+      ))}
     </div>
-  ))}
-</section>
+  </div>
 
 
       <main className="lanes board">
-          <div className="deck" ref={deckRef as any} title="Draw pile">
-            <div className="deck-count">{shoe.length}</div>
-          </div>
         {[0,1,2].map(i => {
           const sc = laneScore(i)
           return (
@@ -444,28 +313,24 @@ function nextTurn(){
         })}
       </main>
 
-
-<section className="lane-summaries board" style={{padding:'0 12px 8px'}}>
+      <section className="lane-summaries board" style={{ padding: '0 12px 0' }}>
   {[0,1,2].map(i=> (
-    <div key={i} className="lane-summary playedstrip">
-      <div className="lane-summary-head">
-        <span>🖐️ Your cards in Lane {i+1}</span>
+    <div key={i} className="lane-summary" style={{background:'rgba(255,255,255,.7)', border:'1px solid #e6e2d9', borderRadius:12, padding:8}}>
+      <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6}}>
+        <span>🖐️</span> Your cards in Lane {i+1}
       </div>
-      <div className="lane-summary-cards">
+      <div style={{display:'flex', gap:6, marginTop:4, justifyContent:'center'}}>
         {(lanes[i]||[]).map((c, idx) => (
           <div className="mini" key={c.id + '@' + idx}>
             <div className="rk">{c.rank}</div>
             <div className="si">{suitChar(c.suit)}</div>
           </div>
         ))}
-        {(lanes[i]||[]).length===0 && (
-          <div className="hint">No cards played yet.</div>
-        )}
+        {(lanes[i]||[]).length===0 && <div style={{fontSize:11, color:'#9ca3af'}}>No cards played yet.</div>}
       </div>
     </div>
   ))}
 </section>
-
 
       <footer>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
@@ -476,7 +341,7 @@ function nextTurn(){
           </div>
         </div>
 
-        <div className="hand">
+        <div className="hand-tray"><div className="hand">
           {hand.map((c, idx) => (
             <div key={c.id + '@' + idx} style={{position:'relative'}}>
               <div style={drag.active && drag.card === c
@@ -488,21 +353,8 @@ function nextTurn(){
             </div>
           ))}
           {hand.length===0 && <div style={{color:'#6b7280'}}>Drawing…</div>}
-        </div>
-
-  {/* FX flights */}
-  <div className="fx-layer">
-    {flights.map(f => (
-      <div key={f.id} className="fly" style={{
-        left: f.x, top: f.y,
-        transform: `translate(${f.dx}px, ${f.dy}px)`
-      }}>
-        <Card card={f.card} />
-      </div>
-    ))}
-  </div>
-</footer>
-
+        </div></div>
+      </footer>
 
       {/* Drag ghost to <body> so it always matches clientX/Y */}
       {drag.active && drag.card && <DragGhost drag={drag} card={drag.card} />}
