@@ -13,6 +13,12 @@ type LaneBoard = { flop: (CommunityCard|null)[], turn: CommunityCard|null, river
 const SUITS = ['heart','spade','club','diamond'] as const
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'] as const
 
+
+// Opponent state (add near your other useState calls)
+const [opponentLanes, setOpponentLanes] = useState<Record<number, CardDef[]>>({0:[],1:[],2:[]})
+const [oppRevealed, setOppRevealed] = useState(false)
+
+
 function createCommunityDeck(): CommunityCard[] {
   const deck: CommunityCard[] = []
   for (const s of SUITS) for (const r of RANKS) deck.push({ id: r + s[0], rank: r as any, suit: s as any })
@@ -295,22 +301,26 @@ try {
     draw(1)
   }
 
-  function opponentTurn() {
-  // play 1–2 cards from the shared shoe into random lanes
+function opponentTurn() {
+  // play 1–2 cards from shoe into random lanes
   const plays = Math.min(2, Math.max(0, Math.min(2, shoe.length)));
   const targets: number[] = [];
   for (let k = 0; k < plays; k++) targets.push(Math.floor(Math.random() * 3));
 
-  // pop from shoe and append into opponent lanes
+  // take from shoe, append to opponent lanes
   setShoe(prev => {
-    let next = [...prev];
+    const next = [...prev];
     const taken: CardDef[] = [];
     for (let k = 0; k < plays; k++) {
       const c = next.pop();
       if (c) taken.push(c);
     }
     setOpponentLanes(ol => {
-      const out: Record<number, CardDef[]> = {0:[...(ol[0]||[])],1:[...(ol[1]||[])],2:[...(ol[2]||[])]};
+      const out: Record<number, CardDef[]> = {
+        0: [...(ol[0]||[])],
+        1: [...(ol[1]||[])],
+        2: [...(ol[2]||[])],
+      };
       taken.forEach((c, idx) => {
         const lane = targets[idx] ?? 0;
         out[lane] = [...out[lane], c];
@@ -320,6 +330,7 @@ try {
     return next;
   });
 }
+
 
   
 function nextTurn(){
@@ -394,6 +405,43 @@ function nextTurn(){
           )
         })}
       </main>
+
+      <section className="lane-summaries board">
+  {[0,1,2].map(i=> (
+    <div key={'opp'+i} className="lane-summary"
+         style={{background:'rgba(0,0,0,.08)', border:'1px solid #d8d5ce', borderRadius:12, padding:8}}>
+      <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6, color:'#374151'}}>
+        <span>👤</span> Opponent cards in Lane {i+1}
+      </div>
+
+      <div style={{display:'flex', gap:6, marginTop:4, justifyContent:'center', minHeight:28}}>
+        {!oppRevealed ? (
+          // Hidden view: show the same number of card backs as they’ve played
+          <div style={{display:'flex', gap:6}}>
+            {Array.from({length:(opponentLanes[i]||[]).length || 0}).map((_,k)=>(
+              <div key={k} className="mini back" />
+            ))}
+            {(opponentLanes[i]||[]).length===0 &&
+              <div style={{fontSize:11, color:'#9ca3af'}}>Hidden</div>}
+          </div>
+        ) : (
+          // Revealed view: show mini-cards
+          <>
+            {(opponentLanes[i]||[]).map((c, idx) => (
+              <div className="mini" key={c.id + '@o' + idx}>
+                <div className="rk">{c.rank}</div>
+                <div className="si">{suitChar(c.suit)}</div>
+              </div>
+            ))}
+            {(opponentLanes[i]||[]).length===0 &&
+              <div style={{fontSize:11, color:'#9ca3af'}}>No cards</div>}
+          </>
+        )}
+      </div>
+    </div>
+  ))}
+</section>
+
 
       <section style={{padding:'0 12px 8px'}}>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12}}>
