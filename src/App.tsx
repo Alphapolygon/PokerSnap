@@ -59,6 +59,14 @@ function DragGhost({ drag, card }: { drag: DragState, card: CardDef }) {
 }
 
 export default function App() {
+
+// Opponent (demo): mirror lanes structure but separate state
+const [opponentLanes, setOpponentLanes] = useState<Record<number, CardDef[]>>({0:[],1:[],2:[]})
+const [oppRevealed, setOppRevealed] = useState(false)
+
+// Deck & FX overlay
+const deckRef = useRef<HTMLDivElement|null>(null)
+const [flights, setFlights] = useState<Array<{id:string, card: CardDef, x:number, y:number, dx:number, dy:number}>>([])
   // Community
   const [community] = useState(()=>predealBoards(createCommunityDeck()))
   const [revealStage, setRevealStage] = useState(0) // 0:none,1:flop,2:turn,3:river
@@ -86,6 +94,16 @@ export default function App() {
   const [shakeLane, setShakeLane] = useState<number|null>(null)
   const [energyNextTurn, setEnergyNextTurn] = useState(0)
 
+// Spawn a simple flight animation from (x,y) to (tx,ty) in viewport coords
+function spawnFlight(card: CardDef, from:{x:number,y:number}, to:{x:number,y:number}){
+  const id = card.id + '-' + Math.random().toString(36).slice(2)
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  setFlights(f => [...f, { id, card, x: from.x, y: from.y, dx, dy }])
+  // Remove after animation ends (~360ms)
+  setTimeout(()=> setFlights(f=> f.filter(fl=> fl.id!==id)), 420)
+}
+
   useEffect(()=> { startTurn(1) }, [])
 
   // Optional body class while dragging (cursor UX)
@@ -94,7 +112,16 @@ export default function App() {
     drag.active ? c.add('dragging') : c.remove('dragging')
   }, [drag.active])
 
-  // ---- Draw helpers ----
+  
+// ---- DOM rect helpers ----
+  function getViewportCenterOf(el: HTMLElement|null){
+    if (!el) return { x: innerWidth - 40, y: innerHeight/2 }
+    const r = el.getBoundingClientRect()
+    return { x: r.left + r.width/2, y: r.top + r.height/2 }
+  }
+
+// ---- Draw helpers
+ ----
   function drawFromPiles(want: number, handStart: CardDef[]) {
     let h = [...handStart]
     let shoeLocal = [...shoe]
@@ -113,7 +140,21 @@ export default function App() {
     return h
   }
   function drawTo(n: number) { setHand(prev => drawFromPiles(Math.max(0, n - prev.length), prev)) }
-  function draw(n: number)   { setHand(prev => drawFromPiles(n, prev)) }
+  
+function draw(n: number){
+  // visual: spawn n flights from deck to hand tray center
+  const from = getViewportCenterOf(deckRef.current)
+  const handTray = document.querySelector('.hand-tray') as HTMLElement | null
+  const to = getViewportCenterOf(handTray)
+  for (let i=0;i<n;i++){
+    setTimeout(()=> {
+      const c = (shoe[shoe.length-1-i]) || hand[0] || CARD_DEFS[0]
+      spawnFlight(c, from, to)
+    }, i*70)
+  }
+  setHand(prev => drawFromPiles(n, prev))
+}
+
 
   function doDiscard(n:number) {
     setHand(prev => {
@@ -152,6 +193,14 @@ export default function App() {
     setHand(prev => prev.filter(c => c !== card))
     setEnergy(e => Math.max(0, e - card.cost))
     setSelected(null)
+
+// FX: fly from current cursor (drag.x,drag.y) to lane center
+try {
+  const from = { x: drag.x, y: drag.y }
+  const laneEl = document.querySelector(`[data-lane="${laneIdx}"]`) as HTMLElement | null
+  const to = getViewportCenterOf(laneEl)
+  spawnFlight(card, from, to)
+} catch {}
 
     // Centralized effect engine
     applyOnReveal(card, {
@@ -235,13 +284,27 @@ export default function App() {
     setHand(prev => prev.filter(c => c !== selected))
     setDiscard(d => [...d, selected!])
     setSelected(null)
+
+// FX: fly from current cursor (drag.x,drag.y) to lane center
+try {
+  const from = { x: drag.x, y: drag.y }
+  const laneEl = document.querySelector(`[data-lane="${laneIdx}"]`) as HTMLElement | null
+  const to = getViewportCenterOf(laneEl)
+  spawnFlight(card, from, to)
+} catch {}
     draw(1)
   }
 
-  function nextTurn() {
-    if (turn>=6) return
+  
+function nextTurn(){
+  if (turn>=6) return
+  setOppRevealed(true)
+  setTimeout(()=> {
+    setOppRevealed(false)
     startTurn(turn+1)
-  }
+  }, 800)
+}
+
 
   function revealedBoard(i:number) {
     const arr: CommunityCard[] = []
@@ -279,16 +342,7 @@ export default function App() {
         </div>
       </header>
 
-      <div className="stage">
-  <div className="opp-hand-tray">
-    <div className="opp-hand">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="card-back" />
-      ))}
-    </div>
-  </div>
-
-<main className="lanes board">
+      <main className="lanes">
         {[0,1,2].map(i => {
           const sc = laneScore(i)
           return (
@@ -355,8 +409,20 @@ export default function App() {
           ))}
           {hand.length===0 && <div style={{color:'#6b7280'}}>Drawing…</div>}
         </div>
-      </footer>
-</div>
+
+  {/* FX flights */}
+  <div className="fx-layer">
+    {flights.map(f => (
+      <div key={f.id} className="fly" style={{
+        left: f.x, top: f.y,
+        transform: `translate(${f.dx}px, ${f.dy}px)`
+      }}>
+        <Card card={f.card} />
+      </div>
+    ))}
+  </div>
+</footer>
+
 
       {/* Drag ghost to <body> so it always matches clientX/Y */}
       {drag.active && drag.card && <DragGhost drag={drag} card={drag.card} />}

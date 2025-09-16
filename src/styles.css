@@ -87,113 +87,47 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
 .dragging * { cursor: grabbing !important; }
 .drag-ghost { filter: drop-shadow(0 12px 24px rgba(0,0,0,.25)); }
 
-/* === Stage layout to center lanes and add opponent hand =================== */
-:root{ --header-h: 88px; } /* adjust to your actual header height */
-
-.stage{
-  min-height: calc(100vh - var(--header-h));
-  display: grid;
-  grid-template-rows: auto 1fr auto auto; /* opp-hand | lanes | summaries | hand */
-  gap: 8px;
-}
-
-/* Center the lanes row vertically within the stage middle track */
-.board.lanes{
-  align-self: center;
-  padding-bottom: 0; /* tighter gap above summaries */
-}
-
-/* Summaries sit just above the hand */
-.lane-summaries.board{ margin-top: 0; }
-
-/* Opponent hand tray (top) shares board width */
-.opp-hand-tray{ width: var(--board-w); margin: 0 auto; }
-.opp-hand{
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  opacity: .85;
-  filter: saturate(.85);
-}
-
-/* Simple card back for opponent's hidden cards */
-.card-back{
-  position: relative;
-  width: 112px;
-  height: 160px;
-  border-radius: 12px;
+/* === Right-side Deck & Flights =========================================== */
+.deck{
+  position: fixed;
+  right: max(8px, calc((100vw - var(--board-w))/2 - 56px));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 84px; height: 120px;
+  border-radius: 10px;
   background: linear-gradient(145deg, #1c2238, #0f1322);
   border: 1px solid #2b3452;
-  box-shadow: inset 0 6px 20px rgba(0,0,0,.35), 0 8px 18px rgba(0,0,0,.25);
+  box-shadow: 0 8px 18px rgba(0,0,0,.25), inset 0 6px 20px rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
 }
-.card-back::after{
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border-radius: 8px;
-  border: 1px dashed #44507a;
-}
-/* ================== Responsive layout ================== */
-/* Desktop defaults are whatever you already have. */
-
-/* Tablet: slightly narrower lanes */
-@media (max-width: 1024px) {
-  :root{
-    --lane-w: 300px;     /* was 360px */
-    --lane-h: 460px;     /* optional: shorter lanes */
-  }
+.deck-count{
+  color: #d7defa; font-weight: 700; font-size: 20px;
 }
 
-/* Mobile: single column, full-viewport width */
-@media (max-width: 768px) {
-  :root{
-    --cols: 1;                /* stack lanes vertically */
-    --lane-w: 92vw;           /* lane width fits the phone */
-    --lane-h: auto;           /* let lane height grow with content */
-    --lane-gap: 12px;
-  }
+/* Flights overlay */
+.fx-layer{
+  position: fixed; inset: 0; pointer-events: none; z-index: 60;
+}
+.fly{
+  position: fixed;
+  width: 112px; height: 160px;
+  transform: translate(0,0);
+  transition: transform 380ms cubic-bezier(.22,1,.36,1);
+  will-change: transform;
+  z-index: 61;
+}
 
-  /* board rows (lanes + summaries + hand tray) all match the phone width */
-  .board{
-    width: 92vw;              /* override the computed board width */
-    margin: 0 auto;
-  }
-
-  /* one column grids */
-  .board.lanes,
-  .lane-summaries{
-    grid-template-columns: 1fr;
-    column-gap: 0;
-    row-gap: var(--lane-gap);
-    justify-items: center;
-  }
-
-  /* make each lane/panel conform to the mobile width */
-  .lane,
-  .lane-summary{
-    width: var(--lane-w);
-    height: auto;             /* or set a fixed px value if you prefer */
-    box-sizing: border-box;
-  }
-
-  /* tighten internal spacing if needed */
-  .lane .laneBody{
-    overflow: visible;        /* avoid inner scroll on small screens */
-    gap: 8px;
-  }
-
-  /* hand tray: wrap cards to multiple rows */
-  .hand{
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  /* optional: slightly smaller card size on phones
-     (only if your cards overflow horizontally) */
-  .card{
-    width: 96px;
-    height: 140px;
-    flex: 0 0 96px;
+/* Opponent mini card backs */
+.mini.back{
+  width: 30px; height: 42px; border-radius: 6px;
+  background: linear-gradient(145deg, #1b1f32, #0f1324);
+  border: 1px solid #2b3452;
+  box-shadow: inset 0 6px 16px rgba(0,0,0,.35);
+}
+@media (max-width: 768px){
+  .deck{
+    right: 8px; top: calc(var(--header-h, 64px) + 8px);
+    transform: none; width: 70px; height: 100px;
   }
 }
