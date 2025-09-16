@@ -417,7 +417,7 @@ function nextTurn(){
 </section>
 
 
-      <main className="lanes">
+      <main className="lanes board">
           <div className="deck" ref={deckRef as any} title="Draw pile">
             <div className="deck-count">{shoe.length}</div>
           </div>
@@ -446,27 +446,26 @@ function nextTurn(){
 
 
 <section className="lane-summaries board" style={{padding:'0 12px 8px'}}>
+  {[0,1,2].map(i=> (
+    <div key={i} className="lane-summary playedstrip">
+      <div className="lane-summary-head">
+        <span>🖐️ Your cards in Lane {i+1}</span>
+      </div>
+      <div className="lane-summary-cards">
+        {(lanes[i]||[]).map((c, idx) => (
+          <div className="mini" key={c.id + '@' + idx}>
+            <div className="rk">{c.rank}</div>
+            <div className="si">{suitChar(c.suit)}</div>
+          </div>
+        ))}
+        {(lanes[i]||[]).length===0 && (
+          <div className="hint">No cards played yet.</div>
+        )}
+      </div>
+    </div>
+  ))}
+</section>
 
-      
-        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12}}>
-          {[0,1,2].map(i=> (
-            <div key={i} style={{background:'rgba(255,255,255,.7)', border:'1px solid #e6e2d9', borderRadius:12, padding:8}}>
-              <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6}}>
-                <span>🖐️</span> Your cards in Lane {i+1}
-              </div>
-              <div style={{display:'flex', gap:6, marginTop:4}}>
-                {(lanes[i]||[]).map((c, idx) => (
-                  <div className="mini" key={c.id + '@' + idx}>
-                    <div className="rk">{c.rank}</div>
-                    <div className="si">{suitChar(c.suit)}</div>
-                  </div>
-                ))}
-                {(lanes[i]||[]).length===0 && <div style={{fontSize:11, color:'#9ca3af'}}>No cards played yet.</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <footer>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
