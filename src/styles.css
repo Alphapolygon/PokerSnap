@@ -131,3 +131,85 @@ footer { border-top: 1px solid var(--border); background: rgba(255,255,255,.9); 
     transform: none; width: 70px; height: 100px;
   }
 }
+
+/* === Fixed, centered board =============================================== */
+:root{
+  --cols: 3;
+  --lane-w: 340px;         /* narrower lanes (tweak here) */
+  --lane-gap: 16px;
+  --board-w: calc(var(--cols)*var(--lane-w) + (var(--cols)-1)*var(--lane-gap));
+}
+
+/* Center rows that share board width */
+.board { width: var(--board-w); margin: 0 auto; }
+
+/* Lanes row uses fixed columns */
+.lanes.board{
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--lane-w));
+  column-gap: var(--lane-gap);
+  justify-content: center; /* center the grid */
+}
+
+/* Lane tile adopts fixed width */
+.lane{ width: var(--lane-w); }
+
+/* Opponent & player lane strips use same width as lanes */
+.lane-summaries.board{
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--lane-w));
+  column-gap: var(--lane-gap);
+  justify-content: center;
+}
+
+/* Make strips look the same (reusing your .playedstrip look) */
+.lane-summary.playedstrip{
+  background: rgba(255,255,255,.7);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+.lane-summary-head{
+  font-size: 12px; font-weight: 700; color: #374151;
+  display:flex; align-items:center; gap:6px;
+}
+.lane-summary-cards{
+  display:flex; gap:6px; margin-top:4px; justify-content:center;
+}
+
+/* Hand centered */
+.hand{
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Opponent mini card backs match your mini size */
+.mini.back{
+  width: 40px; height: 56px; border-radius: 6px;
+  background: linear-gradient(145deg, #1b1f32, #0f1324);
+  border: 1px solid #2b3452;
+  box-shadow: inset 0 6px 16px rgba(0,0,0,.35);
+}
+
+/* Deck on the right */
+.deck{
+  position: fixed;
+  right: max(8px, calc((100vw - var(--board-w))/2 - 56px));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 84px; height: 120px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1c2238, #0f1322);
+  border: 1px solid #2b3452;
+  box-shadow: 0 8px 18px rgba(0,0,0,.25), inset 0 6px 20px rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+}
+.deck-count{ color:#d7defa; font-weight:700; font-size:20px; }
+
+/* Mobile: stack lanes; deck to top-right */
+@media (max-width: 768px){
+  :root{ --cols: 1; --lane-w: 92vw; --lane-gap: 12px; }
+  .deck{ right: 8px; top: calc(64px + 8px); transform: none; width: 70px; height: 100px; }
+}
+
