@@ -381,26 +381,24 @@ function nextTurn(){
         </div>
       </header>
 
-            <section className="lane-summaries board">
+<section className="lane-summaries board">
   {[0,1,2].map(i=> (
-    <div key={'opp'+i} className="lane-summary"
-         style={{background:'rgba(0,0,0,.08)', border:'1px solid #d8d5ce', borderRadius:12, padding:8}}>
-      <div style={{fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6, color:'#374151'}}>
-        <span>👤</span> Opponent cards in Lane {i+1}
+    <div key={'opp'+i} className="lane-summary playedstrip opp">
+      <div className="lane-summary-head">
+        <span>👤 Opponent cards in Lane {i+1}</span>
       </div>
 
-      <div style={{display:'flex', gap:6, marginTop:4, justifyContent:'center', minHeight:28}}>
+      <div className="lane-summary-cards">
         {!oppRevealed ? (
-          // Hidden view: show the same number of card backs as they’ve played
-          <div style={{display:'flex', gap:6}}>
+          <>
             {Array.from({length:(opponentLanes[i]||[]).length || 0}).map((_,k)=>(
               <div key={k} className="mini back" />
             ))}
-            {(opponentLanes[i]||[]).length===0 &&
-              <div style={{fontSize:11, color:'#9ca3af'}}>Hidden</div>}
-          </div>
+            {(opponentLanes[i]||[]).length===0 && (
+              <div className="hint">Hidden</div>
+            )}
+          </>
         ) : (
-          // Revealed view: show mini-cards
           <>
             {(opponentLanes[i]||[]).map((c, idx) => (
               <div className="mini" key={c.id + '@o' + idx}>
@@ -408,8 +406,9 @@ function nextTurn(){
                 <div className="si">{suitChar(c.suit)}</div>
               </div>
             ))}
-            {(opponentLanes[i]||[]).length===0 &&
-              <div style={{fontSize:11, color:'#9ca3af'}}>No cards</div>}
+            {(opponentLanes[i]||[]).length===0 && (
+              <div className="hint">No cards played yet.</div>
+            )}
           </>
         )}
       </div>
@@ -417,7 +416,11 @@ function nextTurn(){
   ))}
 </section>
 
+
       <main className="lanes">
+          <div className="deck" ref={deckRef as any} title="Draw pile">
+            <div className="deck-count">{shoe.length}</div>
+          </div>
         {[0,1,2].map(i => {
           const sc = laneScore(i)
           return (
